@@ -26,6 +26,9 @@ require('packer').startup(function(use)
       'folke/neodev.nvim',
     },
   }
+  use {
+    "ray-x/lsp_signature.nvim",
+  }
 
   use { -- Autocompletion
     'hrsh7th/nvim-cmp',
@@ -59,6 +62,15 @@ require('packer').startup(function(use)
   -- golang stuffs
   use 'ray-x/go.nvim'
   use 'ray-x/guihua.lua' -- recommanded if need floating window support
+
+  -- better navigation
+  use({
+    'ray-x/navigator.lua',
+    requires = {
+      { 'ray-x/guihua.lua', run = 'cd lua/fzy && make' },
+      { 'neovim/nvim-lspconfig' },
+    },
+  })
 
   -- Git related plugins
   use 'tpope/vim-fugitive'
@@ -145,7 +157,12 @@ vim.wo.signcolumn = 'yes'
 
 -- Set colorscheme
 vim.o.termguicolors = true
-vim.cmd [[colorscheme onedark]]
+require('onedark').setup {
+  style = 'deep',
+  transparent = false,
+}
+require('onedark').load()
+-- vim.cmd [[colorscheme onedark]]
 
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = 'menuone,noselect'
@@ -210,6 +227,9 @@ require("nvim-tree").setup({
   sync_root_with_cwd = true,
   update_focused_file = {
     enable = true
+  },
+  git = {
+    ignore = false
   }
 })
 
@@ -260,8 +280,9 @@ telescope.setup {
   },
   pickers = {
     find_files = {
-      -- `hidden = true` only will still show the inside of `.git/` as it's not `.gitignore`d.
-      find_command = { "rg", "--files", "--hidden", "--glob", "!**/.git/*" },
+      -- `hidden = true` only will still show the inside of `.git/` as it's not `.gitignore`d
+      find_command = { "rg", "--files", "--hidden", "--no-ignore", "--glob", "!**/.git/*", "--glob", "!**/node_modules/*",
+        "--glob", "!**/.yarn/*", "--glob", "!**/.cache/*" },
     }
   }
 }
@@ -359,6 +380,7 @@ require("nvim-autopairs").setup({
     java = false, -- don't check treesitter on java
   }
 })
+require('nvim-ts-autotag').setup()
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
@@ -395,7 +417,7 @@ local on_attach = function(_, bufnr)
 
   -- See `:help K` for why this keymap
   nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
-  nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
+  nmap('<leader>s', vim.lsp.buf.signature_help, 'Signature Documentation')
 
   -- Lesser used LSP functionality
   nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
@@ -424,7 +446,6 @@ local servers = {
   -- gopls = {},
   -- pyright = {},
   -- rust_analyzer = {},
-  -- tsserver = {},
 
   sumneko_lua = {
     Lua = {
@@ -460,6 +481,8 @@ mason_lspconfig.setup_handlers {
     }
   end,
 }
+
+require("lsp_signature").setup()
 
 -- Turn on lsp status information
 require('fidget').setup()
@@ -511,6 +534,15 @@ cmp.setup {
 -- vim: ts=2 sts=2 sw=2 et
 
 require('go').setup()
+require('navigator').setup({
+  keymaps = {
+    -- required overrides to avoid conflicts
+    { key = '<leader>kk', func = vim.lsp.buf.format, mode = 'n', desc = 'format' },
+    { key = '<leader>kk', func = vim.lsp.buf.range_formatting, mode = 'v', desc = 'range format' },
+    { key = '<leader>h', func = require('navigator.dochighlight').hi_symbol, desc = 'hi_symbol' },
+    { key = '<leader>s', func = vim.lsp.buf.signature_help, desc = 'signature_help' },
+  }
+})
 
 local format_sync_grp = vim.api.nvim_create_augroup("GoImport", {})
 vim.api.nvim_create_autocmd("BufWritePre", {
