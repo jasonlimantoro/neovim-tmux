@@ -5,8 +5,8 @@ vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>")
 vim.keymap.set("n", "<leader>k", ":Telescope keymaps<CR>")
 vim.keymap.set("n", "<leader>ff", require("telescope.builtin").find_files, { desc = "[F]ind [F]iles" })
 
--- window swtiching
--- vim.keymap.set("n", "<C-j>", "<C-w>j")
--- vim.keymap.set("n", "<C-k>", "<C-w>k")
--- vim.keymap.set("n", "<C-h>", "<C-w>h")
--- vim.keymap.set("n", "<C-l>", "<C-w>l")
+-- keep paste buffer
+vim.keymap.set("v", "<leader>p", "\"_dP", { desc = "Keep paste buffer" })
+
+vim.keymap.set("v", "<leader>y", "\"*y", { desc = "Copy to clipboard" })
+vim.keymap.set("n", "<leader>p", "\"*p", { desc = "Paste from clipboard" })
